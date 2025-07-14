@@ -55,7 +55,6 @@
                         android:text="Consumidas"
                         android:textSize="14sp" />
                 </LinearLayout>
-
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -95,21 +94,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
                             android:text="Café da Manhã"
                             android:textColor="@color/black"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                         <ImageButton
                             android:id="@+id/btnAddBreakfast"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_add"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="Adicionar Alimento"
-                            android:src="@drawable/ic_add" />
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"/>
                     </RelativeLayout>
                     <LinearLayout
                         android:id="@+id/layoutBreakfastFoods"
@@ -137,21 +134,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
                             android:text="Almoço"
                             android:textColor="@color/black"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                         <ImageButton
                             android:id="@+id/btnAddLunch"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_add"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="Adicionar Alimento"
-                            android:src="@drawable/ic_add" />
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"/>
                     </RelativeLayout>
                     <LinearLayout
                         android:id="@+id/layoutLunchFoods"
@@ -179,21 +174,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
                             android:text="Jantar"
                             android:textColor="@color/black"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                         <ImageButton
                             android:id="@+id/btnAddDinner"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_add"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="Adicionar Alimento"
-                            android:src="@drawable/ic_add" />
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"/>
                     </RelativeLayout>
                     <LinearLayout
                         android:id="@+id/layoutDinnerFoods"
@@ -221,21 +214,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
                             android:text="Lanche / Outros"
                             android:textColor="@color/black"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                         <ImageButton
                             android:id="@+id/btnAddSnack"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_add"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="Adicionar Alimento"
-                            android:src="@drawable/ic_add" />
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"/>
                     </RelativeLayout>
                     <LinearLayout
                         android:id="@+id/layoutSnackFoods"
@@ -261,22 +252,60 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Exercícios"
+                            android:textColor="@color/black"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                        <ImageButton
+                            android:id="@+id/btnAddExercise"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_add"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Adicionar Exercício"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"/>
+                    </RelativeLayout>
+                    <LinearLayout
+                        android:id="@+id/layoutExerciseEntries"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
                             android:id="@+id/tvWaterTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Água (500ml)"
                             android:textColor="@color/black"
                             android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:layout_centerVertical="true"
-                            android:layout_alignParentStart="true"/>
+                            android:textStyle="bold" />
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
+                            android:gravity="center_vertical"
                             android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:gravity="center_vertical">
+                            android:layout_centerVertical="true">
                             <ImageButton
                                 android:id="@+id/btnRemoveWater"
                                 android:layout_width="48dp"
@@ -307,7 +336,6 @@
                         android:background="?android:attr/listDivider"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="8dp"/>
-
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
@@ -327,54 +355,8 @@
                     </RelativeLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:text="Exercícios"
-                            android:textColor="@color/black"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-
-                        <ImageButton
-                            android:id="@+id/btnAddExercise"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="Adicionar Exercício"
-                            android:src="@drawable/ic_add" />
-                    </RelativeLayout>
-
-                    <LinearLayout
-                        android:id="@+id/layoutExerciseEntries"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginTop="8dp"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
-
     </ScrollView>
 
     <FrameLayout

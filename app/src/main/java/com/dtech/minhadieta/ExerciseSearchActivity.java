@@ -45,7 +45,9 @@ public class ExerciseSearchActivity extends AppCompatActivity {
         EditText etSearch = findViewById(R.id.etSearchExercise);
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 2) {
@@ -54,8 +56,10 @@ public class ExerciseSearchActivity extends AppCompatActivity {
                     adapter.updateData(new ArrayList<>());
                 }
             }
+
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
     }
 
@@ -126,32 +130,51 @@ public class ExerciseSearchActivity extends AppCompatActivity {
     }
 
     private void loadExercisesFromCSV() {
-        // Peso médio em kg para o cálculo de calorias
-        final float averageWeightKg = 70.0f;
+        final float averageWeightKg = 70.0f; // Peso médio para cálculo
         List<ExerciseEntity> exercises = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("exercise_dataset.csv")))) {
             String line;
-            reader.readLine(); // Pula o cabeçalho
+            reader.readLine(); // Pula a linha do cabeçalho
 
             while ((line = reader.readLine()) != null) {
-                String[] tokens = line.split(",");
-                if (tokens.length >= 2) {
-                    try {
-                        String activity = tokens[0].trim();
-                        float caloriesPerKgPerHour = Float.parseFloat(tokens[1].trim());
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
 
-                        // Calcula calorias por minuto para um peso médio de 70kg
+                try {
+                    String activity;
+                    String remainingLine;
+
+                    // Lógica para lidar com nomes de atividade que contêm vírgulas e estão entre aspas
+                    if (line.startsWith("\"")) {
+                        int lastQuoteIndex = line.indexOf("\"", 1);
+                        activity = line.substring(1, lastQuoteIndex);
+                        // Pega o resto da linha depois da aspa e da vírgula
+                        remainingLine = line.substring(lastQuoteIndex + 2);
+                    } else {
+                        int firstCommaIndex = line.indexOf(",");
+                        activity = line.substring(0, firstCommaIndex);
+                        remainingLine = line.substring(firstCommaIndex + 1);
+                    }
+
+                    // Agora, processamos o resto da linha, que só tem números
+                    String[] tokens = remainingLine.split(",");
+                    if (tokens.length > 0) {
+                        // O valor que nos interessa é o último da linha
+                        float caloriesPerKgPerHour = Float.parseFloat(tokens[tokens.length - 1].trim());
                         float caloriesPerMinute = (caloriesPerKgPerHour * averageWeightKg) / 60.0f;
 
                         exercises.add(new ExerciseEntity(activity, caloriesPerMinute));
-                    } catch (NumberFormatException e) {
-                        Log.e(TAG, "Erro de formato na linha do CSV de exercícios: " + line, e);
                     }
+                } catch (Exception e) {
+                    Log.e(TAG, "Erro de formato ou parsing na linha do CSV de exercícios: " + line, e);
                 }
             }
+
             db.foodDao().insertAllExercises(exercises);
             Log.d(TAG, "Carregados " + exercises.size() + " exercícios no banco de dados.");
+
         } catch (IOException e) {
             Log.e(TAG, "Erro ao ler exercise_dataset.csv", e);
         }

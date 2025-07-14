@@ -33,9 +33,18 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ExerciseSearchActivity"
+            android:exported="false" />
+
         <activity
             android:name=".FoodSearchActivity"
             android:exported="false" />
+
+        <receiver
+            android:name=".NotificationReceiver"
+            android:enabled="true" />
 
     </application>
 

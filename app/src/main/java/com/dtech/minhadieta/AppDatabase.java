@@ -6,16 +6,19 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import androidx.room.Database;
 
-@Database(entities = {FoodEntity.class, AminoAcidEntity.class, FattyAcidEntity.class, MealEntryEntity.class, WaterIntakeEntity.class, ExerciseEntity.class},
-        version = 5) public abstract class AppDatabase extends RoomDatabase {
+@Database(entities = {
+        FoodEntity.class, AminoAcidEntity.class, FattyAcidEntity.class,
+        MealEntryEntity.class, WaterIntakeEntity.class, ExerciseEntity.class,
+        LoggedExerciseEntity.class
+}, version = 6, exportSchema = false)
+public abstract class AppDatabase extends RoomDatabase {
 
     public abstract FoodDao foodDao();
 
     private static volatile AppDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;
-    public static final ExecutorService databaseWriteExecutor =
+    static final ExecutorService databaseWriteExecutor =
             Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
     static AppDatabase getDatabase(final Context context) {
@@ -24,8 +27,7 @@ import androidx.room.Database;
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     AppDatabase.class, "minha_dieta_db")
-                            // 3. Adicione esta linha
-                            .fallbackToDestructiveMigration()
+                            .fallbackToDestructiveMigration() // Mantém a recriação automática
                             .build();
                 }
             }
