@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Tema base do aplicativo, agora sem a barra de título (ActionBar) -->
+    <style name="Theme.MinhaDieta" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Cor primária (verde) -->
+        <item name="colorPrimary">@color/green_primary</item>
+        <item name="colorPrimaryVariant">@color/green_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Cor secundária (laranja) -->
+        <item name="colorSecondary">@color/orange_accent</item>
+        <item name="colorSecondaryVariant">@color/orange_accent</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Cor da barra de status (a barra superior do celular) -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Personalize seu tema aqui -->
+    </style>
+</resources>

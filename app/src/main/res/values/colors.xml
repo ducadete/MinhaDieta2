@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta de Cores Primárias (Verde) -->
+    <color name="green_primary">#4CAF50</color>
+    <color name="green_dark">#388E3C</color>
+
+    <!-- Cor de Destaque (Laranja) -->
+    <color name="orange_accent">#FF9800</color>
+
+    <!-- Cores Padrão -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

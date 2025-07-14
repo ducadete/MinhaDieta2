@@ -1,0 +1,9 @@
+<!-- res/menu/bottom_nav_menu.xml -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_diary"
+        android:icon="@drawable/ic_diary"
+        android:title="Gráficos" />
+</menu>
