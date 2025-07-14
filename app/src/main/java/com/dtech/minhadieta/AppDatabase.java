@@ -8,8 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import androidx.room.Database;
 
-@Database(entities = {FoodEntity.class, AminoAcidEntity.class, FattyAcidEntity.class, MealEntryEntity.class, WaterIntakeEntity.class},
-        version = 4)public abstract class AppDatabase extends RoomDatabase {
+@Database(entities = {FoodEntity.class, AminoAcidEntity.class, FattyAcidEntity.class, MealEntryEntity.class, WaterIntakeEntity.class, ExerciseEntity.class},
+        version = 5) public abstract class AppDatabase extends RoomDatabase {
 
     public abstract FoodDao foodDao();
 

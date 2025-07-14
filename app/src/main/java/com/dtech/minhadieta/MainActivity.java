@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-
+    private LinearLayout layoutExerciseEntries;
+    private float burnedCalories = 0;
     private TextView tvCaloriesConsumed, tvCaloriesRemaining;
     private float totalCaloriesGoal = 2000;
 
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
+        layoutExerciseEntries = findViewById(R.id.layoutExerciseEntries);
         tvCaloriesConsumed = findViewById(R.id.tvCaloriesConsumed);
         tvCaloriesRemaining = findViewById(R.id.tvCaloriesRemaining);
         layoutBreakfast = findViewById(R.id.layoutBreakfastFoods);
@@ -80,17 +82,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMealsForDate(String date) {
         AppDatabase.databaseWriteExecutor.execute(() -> {
+            // Busca todas as informações para a data selecionada
             List<MealEntryEntity> mealsForDate = db.foodDao().getMealsForDate(date);
+            List<LoggedExerciseEntity> exercisesForDate = db.foodDao().getLoggedExercisesForDate(date);
             WaterIntakeEntity waterForDate = db.foodDao().getWaterForDate(date);
 
             runOnUiThread(() -> {
+                // Limpa a tela
                 clearAllMealLayouts();
+                clearExerciseLayout();
+
+                // Calcula calorias consumidas
                 float currentConsumedCalories = 0;
                 for (MealEntryEntity entry : mealsForDate) {
                     currentConsumedCalories += entry.calories;
                     addFoodToUI(entry);
                 }
-                updateCalorieDisplay(currentConsumedCalories);
+
+                // Calcula calorias queimadas e exibe os exercícios
+                float currentBurnedCalories = 0;
+                for (LoggedExerciseEntity entry : exercisesForDate) {
+                    currentBurnedCalories += entry.caloriesBurned;
+                    addExerciseToUI(entry);
+                }
+
+                // Atualiza os displays
+                updateCalorieDisplay(currentConsumedCalories, currentBurnedCalories);
                 updateWaterDisplay(waterForDate);
             });
         });
@@ -231,9 +248,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Atualiza os contadores de calorias na tela.
      */
-    private void updateCalorieDisplay(float consumed) {
+    // A nova versão aceita as calorias queimadas
+    private void updateCalorieDisplay(float consumed, float burned) {
         tvCaloriesConsumed.setText(String.valueOf((int) consumed));
-        float remaining = totalCaloriesGoal - consumed;
+
+        // A nova fórmula: Meta - Consumidas + Queimadas
+        float remaining = totalCaloriesGoal - consumed + burned;
         tvCaloriesRemaining.setText(String.valueOf((int) remaining));
     }
 
@@ -268,6 +288,12 @@ public class MainActivity extends AppCompatActivity {
         // Listeners dos botões de água
         findViewById(R.id.btnAddWater).setOnClickListener(v -> updateWaterCount(1));
         findViewById(R.id.btnRemoveWater).setOnClickListener(v -> updateWaterCount(-1));
+
+            //exercicio
+        findViewById(R.id.btnAddExercise).setOnClickListener(v -> {
+            Intent intent = new Intent(this, ExerciseSearchActivity.class);
+            exerciseSearchLauncher.launch(intent);
+        });
 
         // Listener do Switch de Lembrete
         SharedPreferences prefs = getSharedPreferences("MinhaDietaPrefs", MODE_PRIVATE);
@@ -307,5 +333,59 @@ public class MainActivity extends AppCompatActivity {
 
         alarmManager.cancel(pendingIntent);
         Toast.makeText(this, "Lembrete de água desativado.", Toast.LENGTH_SHORT).show();
+    }
+
+    private final ActivityResultLauncher<Intent> exerciseSearchLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+                    String name = data.getStringExtra("EXERCISE_NAME");
+                    int duration = data.getIntExtra("EXERCISE_DURATION", 0);
+                    int calories = data.getIntExtra("CALORIES_BURNED", 0);
+
+                    LoggedExerciseEntity newEntry = new LoggedExerciseEntity(name, duration, calories, selectedDate);
+                    saveLoggedExercise(newEntry);
+                }
+            });
+
+    // Adicione estes 4 métodos na sua MainActivity
+
+    private void saveLoggedExercise(LoggedExerciseEntity entry) {
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            db.foodDao().insertLoggedExercise(entry);
+            // Recarrega todos os dados da UI para o dia selecionado
+            runOnUiThread(this::loadUIData);
+        });
+    }
+
+    private void deleteLoggedExercise(LoggedExerciseEntity entry) {
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            db.foodDao().deleteLoggedExerciseById(entry.id);
+            runOnUiThread(this::loadUIData);
+        });
+    }
+
+    private void addExerciseToUI(LoggedExerciseEntity entry) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        // Vamos reutilizar o mesmo layout de item, pois ele já tem o que precisamos
+        View exerciseItemView = inflater.inflate(R.layout.list_item_meal_entry, null, false);
+
+        TextView exerciseNameTextView = exerciseItemView.findViewById(R.id.tv_food_item_name);
+        ImageButton deleteButton = exerciseItemView.findViewById(R.id.btn_delete_item);
+
+        // Formata o texto para exibir o exercício, tempo e calorias queimadas
+        String text = String.format("• %s (%d min) -%d kcal", entry.exerciseName, entry.durationInMinutes, entry.caloriesBurned);
+        exerciseNameTextView.setText(text);
+
+        // Configura o botão de deletar para este exercício
+        deleteButton.setOnClickListener(v -> deleteLoggedExercise(entry));
+
+        layoutExerciseEntries.addView(exerciseItemView);
+    }
+
+    // Limpa o layout de exercícios para evitar duplicatas
+    private void clearExerciseLayout() {
+        layoutExerciseEntries.removeAllViews();
     }
     }
