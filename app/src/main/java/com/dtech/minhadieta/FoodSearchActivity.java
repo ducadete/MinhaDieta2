@@ -49,14 +49,18 @@ public class FoodSearchActivity extends AppCompatActivity {
         EditText etSearch = findViewById(R.id.etSearchFood);
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 2) searchDatabase(s.toString());
                 else if (adapter != null) adapter.updateData(new ArrayList<>());
             }
+
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
     }
 
@@ -108,7 +112,6 @@ public class FoodSearchActivity extends AppCompatActivity {
         View dialogView = inflater.inflate(R.layout.dialog_add_food, null);
         builder.setView(dialogView);
 
-        // --- Referências aos componentes ---
         TextView tvFoodName = dialogView.findViewById(R.id.tv_dialog_food_name);
         TextView tvCaloriesInfo = dialogView.findViewById(R.id.tv_dialog_food_calories);
         TextView tvQuantity = dialogView.findViewById(R.id.tv_quantity);
@@ -117,32 +120,16 @@ public class FoodSearchActivity extends AppCompatActivity {
         ImageButton btnIncrease = dialogView.findViewById(R.id.btn_increase_quantity);
         Button btnAdd = dialogView.findViewById(R.id.btn_dialog_add);
 
-        // --- LÓGICA DE CÁLCULO E EXIBIÇÃO (A PARTE MAIS IMPORTANTE) ---
-
-        // 1. Pega os valores do banco de dados:
-        //    - food.calories = Calorias por 100g (ex: 253 kcal)
-        //    - food.servingWeightInGrams = Peso da porção (ex: 25g para 1 fatia)
-        //    - food.servingUnit = Descrição da porção (ex: "1 fatia")
-
-        // 2. Calcula as calorias para a porção real (a "regra de três"):
-        //    (Calorias / 100g) * Peso da Porção
         float caloriesPerServingUnit = (food.calories / 100f) * food.servingWeightInGrams;
-
-        // 3. Monta o texto de forma clara para o usuário:
-        //    Ex: "63 kcal por 1 fatia"
         String caloriesText = String.format("%.0f kcal por %s", caloriesPerServingUnit, food.servingUnit);
 
-        // 4. Preenche os componentes da tela com as informações corretas:
         tvFoodName.setText(food.name);
-        tvCaloriesInfo.setText(caloriesText); // Mostra a caloria JÁ CALCULADA para a porção
-        tvServingUnit.setText(food.servingUnit + "(s)"); // Ex: "fatia(s)", "unidade(s)"
+        tvCaloriesInfo.setText(caloriesText);
+        tvServingUnit.setText(food.servingUnit + "(s)");
         tvQuantity.setText("1");
-
-        // -----------------------------------------------------------------
 
         currentDialog = builder.create();
 
-        // --- Lógica dos botões (permanece a mesma) ---
         btnDecrease.setOnClickListener(v -> {
             try {
                 float currentValue = Float.parseFloat(tvQuantity.getText().toString());
@@ -165,16 +152,20 @@ public class FoodSearchActivity extends AppCompatActivity {
             }
         });
 
+        // A correção do erro de digitação está aqui (btnAdd)
         btnAdd.setOnClickListener(v -> {
             try {
                 float quantity = Float.parseFloat(tvQuantity.getText().toString());
-                // O cálculo final usa o mesmo valor por porção que já mostramos na tela
                 float finalCalories = caloriesPerServingUnit * quantity;
 
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("FOOD_NAME", food.name);
                 resultIntent.putExtra("FOOD_CALORIES", (int) finalCalories);
                 resultIntent.putExtra("MEAL_TYPE", mealType);
+
+                // Adicione aqui os outros nutrientes que você quer passar de volta
+                // Ex: resultIntent.putExtra("FOOD_PROTEIN", (food.protein_g / 100f) * food.servingWeightInGrams * quantity);
+
                 setResult(RESULT_OK, resultIntent);
                 currentDialog.dismiss();
                 finish();
@@ -185,48 +176,58 @@ public class FoodSearchActivity extends AppCompatActivity {
 
         currentDialog.show();
     }
-
     private void loadFoodsFromCSV() {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("alimentos.csv")))) {
             List<FoodEntity> foods = new ArrayList<>();
             String line;
-            reader.readLine(); // Pula cabeçalho
+            reader.readLine(); // Pula o cabeçalho
+
             while ((line = reader.readLine()) != null) {
+                // Usamos um limite negativo para garantir que colunas vazias no final sejam contadas
                 String[] tokens = line.split(";", -1);
-                if (tokens.length > 4) { // Garante que temos pelo menos as colunas básicas
-                    try {
-                        String calorieString = tokens[4].trim();
-                        if (calorieString.equalsIgnoreCase("NA") || calorieString.equals("*") || calorieString.trim().isEmpty()) {
-                            continue;
-                        }
-                        int id = Integer.parseInt(tokens[0].trim());
-                        String name = tokens[2].trim();
-                        int calories = Integer.parseInt(calorieString);
 
-                        // --- LÓGICA NOVA PARA PORÇÕES ---
-                        String servingUnit = "100g"; // Valor padrão
-                        float servingWeight = 100.0f; // Valor padrão
+                try {
+                    float protein = parseNutrientValue(tokens, 6);
+                    float fat = parseNutrientValue(tokens, 7);
+                    float carbohydrate = parseNutrientValue(tokens, 9);
+                    float fiber = parseNutrientValue(tokens, 10);
+                    float cholesterol = parseNutrientValue(tokens, 8);
+                    float sodium = parseNutrientValue(tokens, 17);
+                    // O CSV de alimentos não tem uma coluna específica para "açúcares", então usaremos 0
+                    float sugars = 0f;
 
-                        // Verifica se as colunas de porção existem e não estão vazias
-                        if (tokens.length > 29 && !tokens[29].trim().isEmpty()) {
-                            servingUnit = tokens[29].trim();
-                        }
-                        if (tokens.length > 30 && !tokens[30].trim().isEmpty()) {
-                            servingWeight = Float.parseFloat(tokens[30].trim().replace(',', '.'));
-                        }
-                        // ------------------------------------
+                    String servingUnit = (tokens.length > 29 && !tokens[29].trim().isEmpty()) ? tokens[29].trim() : "100g";
+                    float servingWeight = (tokens.length > 30 && !tokens[30].trim().isEmpty()) ? parseNutrientValue(tokens, 30) : 100.0f;
 
-                        foods.add(new FoodEntity(id, name, calories, servingUnit, servingWeight));
+                    foods.add(new FoodEntity(
+                            Integer.parseInt(tokens[0].trim()), // ID
+                            tokens[2].trim(), // Nome
+                            (int) parseNutrientValue(tokens, 4), // Calorias
+                            protein, fat, carbohydrate, fiber, cholesterol, sodium, sugars,
+                            servingUnit, servingWeight
+                    ));
 
-                    } catch (Exception e) { // Usamos Exception para pegar qualquer erro (formato, índice, etc)
-                        Log.e(TAG, "Erro de parsing na linha (alimentos.csv): " + line, e);
-                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Erro de parsing ou índice na linha (alimentos.csv): " + line, e);
                 }
             }
             db.foodDao().insertAllFoods(foods);
-            Log.d(TAG, "Carregados " + foods.size() + " itens de alimentos.csv");
+            Log.d(TAG, "Carregados " + foods.size() + " itens de alimentos.csv com todos os nutrientes.");
         } catch (IOException e) {
             Log.e(TAG, "Erro ao ler alimentos.csv", e);
+        }
+    }
+
+    private float parseNutrientValue(String[] tokens, int index) {
+        if (index >= tokens.length || tokens[index] == null) return 0;
+        String value = tokens[index].trim();
+        if (value.isEmpty() || value.equalsIgnoreCase("NA") || value.equalsIgnoreCase("*") || value.equalsIgnoreCase("Tr")) {
+            return 0;
+        }
+        try {
+            return Float.parseFloat(value.replace(',', '.'));
+        } catch (NumberFormatException e) {
+            return 0;
         }
     }
 }

@@ -65,4 +65,8 @@ dependencies {
     // Room (Banco de Dados Local)
     implementation (libs.room.runtime)
     annotationProcessor (libs.room.compiler)
+
+    //graficos
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 }

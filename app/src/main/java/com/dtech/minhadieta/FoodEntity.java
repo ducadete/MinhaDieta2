@@ -16,21 +16,34 @@ public class FoodEntity {
     @ColumnInfo(name = "name")
     public String name;
 
-    @ColumnInfo(name = "calories_per_100g")
-    public int calories; // Representa calorias por 100g
+    // --- CAMPOS PARA TODOS OS NUTRIENTES ---
+    public int calories;
+    public float protein_g;
+    public float fat_g;
+    public float carbohydrate_g;
+    public float fiber_g;
+    public float cholesterol_mg;
+    public float sodium_mg;
+    public float sugars_g;
 
-    // --- NOVOS CAMPOS PARA PORÇÕES ---
-    @ColumnInfo(name = "serving_unit", defaultValue = "100g")
-    public String servingUnit; // Ex: "fatia", "unidade", "xícara", "100g"
+    @ColumnInfo(defaultValue = "100g")
+    public String servingUnit;
 
-    @ColumnInfo(name = "serving_weight_grams", defaultValue = "100")
-    public float servingWeightInGrams; // O peso em gramas da "serving_unit"
+    @ColumnInfo(defaultValue = "100")
+    public float servingWeightInGrams;
 
-    // Construtor atualizado
-    public FoodEntity(int id, @NonNull String name, int calories, String servingUnit, float servingWeightInGrams) {
+    // Construtor completo com 12 argumentos
+    public FoodEntity(int id, @NonNull String name, int calories, float protein_g, float fat_g, float carbohydrate_g, float fiber_g, float cholesterol_mg, float sodium_mg, float sugars_g, String servingUnit, float servingWeightInGrams) {
         this.id = id;
         this.name = name;
         this.calories = calories;
+        this.protein_g = protein_g;
+        this.fat_g = fat_g;
+        this.carbohydrate_g = carbohydrate_g;
+        this.fiber_g = fiber_g;
+        this.cholesterol_mg = cholesterol_mg;
+        this.sodium_mg = sodium_mg;
+        this.sugars_g = sugars_g;
         this.servingUnit = servingUnit;
         this.servingWeightInGrams = servingWeightInGrams;
     }

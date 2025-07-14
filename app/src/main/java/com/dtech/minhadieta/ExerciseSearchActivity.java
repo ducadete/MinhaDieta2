@@ -97,8 +97,8 @@ public class ExerciseSearchActivity extends AppCompatActivity {
 
         btnAdd.setOnClickListener(v -> {
             String durationStr = etDuration.getText().toString();
-            if (durationStr.isEmpty()) {
-                Toast.makeText(this, "Por favor, insira o tempo do exercício.", Toast.LENGTH_SHORT).show();
+            if (durationStr.isEmpty() || Integer.parseInt(durationStr) <= 0) {
+                Toast.makeText(this, "Por favor, insira um tempo válido.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -106,10 +106,15 @@ public class ExerciseSearchActivity extends AppCompatActivity {
                 int durationInMinutes = Integer.parseInt(durationStr);
                 float totalCaloriesBurned = exercise.caloriesPerMinute * durationInMinutes;
 
-                // Aqui retornaremos o resultado para a MainActivity no futuro
-                // Por enquanto, vamos apenas mostrar um Toast
-                Toast.makeText(this, String.format("%s por %d min. Queima: %.0f kcal", exercise.activity, durationInMinutes, totalCaloriesBurned), Toast.LENGTH_LONG).show();
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("EXERCISE_NAME", exercise.activity);
+                resultIntent.putExtra("EXERCISE_DURATION", durationInMinutes);
+                resultIntent.putExtra("CALORIES_BURNED", (int) totalCaloriesBurned);
 
+                // --- LOG DE VERIFICAÇÃO ---
+                Log.d("ExerciseFlow", "Enviando de volta: " + exercise.activity + ", Calorias: " + (int) totalCaloriesBurned);
+
+                setResult(RESULT_OK, resultIntent);
                 currentDialog.dismiss();
                 finish();
             } catch (NumberFormatException e) {

@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
         FoodEntity.class, AminoAcidEntity.class, FattyAcidEntity.class,
         MealEntryEntity.class, WaterIntakeEntity.class, ExerciseEntity.class,
         LoggedExerciseEntity.class
-}, version = 6, exportSchema = false)
+}, version = 7, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract FoodDao foodDao();

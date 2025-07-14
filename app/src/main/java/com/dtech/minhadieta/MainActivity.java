@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +17,17 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -27,16 +36,17 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     // --- Variáveis de UI e Dados ---
-    private TextView tvCaloriesConsumed, tvCaloriesRemaining, tvWaterCount;
+    private TextView tvCaloriesConsumed, tvCaloriesRemaining, tvWaterCount, tvTotalFat, tvTotalCholesterol, tvTotalSodium, tvTotalSugars;
     private float totalCaloriesGoal = 2000;
     private LinearLayout layoutBreakfast, layoutLunch, layoutDinner, layoutSnack, layoutExerciseEntries;
     private SwitchMaterial switchWaterReminder;
+    private PieChart pieChart;
     private AppDatabase db;
     private String selectedDate;
 
     private static final String PREFS_NAME = "MinhaDietaPrefs";
     private static final String KEY_REMINDER_ON = "water_reminder_on";
-    private static final long REMINDER_INTERVAL = 2 * 60 * 60 * 1000; // 2 horas
+    private static final long REMINDER_INTERVAL = 2 * 60 * 60 * 1000;
 
     // --- Launchers para Atividades ---
     private final ActivityResultLauncher<Intent> foodSearchLauncher = registerForActivityResult(
@@ -45,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Intent data = result.getData();
                     MealEntryEntity newEntry = new MealEntryEntity(
+                            data.getIntExtra("FOOD_ID", -1),
                             data.getStringExtra("FOOD_NAME"),
+                            data.getFloatExtra("CONSUMED_WEIGHT", 0f),
                             data.getIntExtra("FOOD_CALORIES", 0),
                             data.getStringExtra("MEAL_TYPE"),
                             selectedDate
@@ -69,8 +81,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-
-    // --- Ciclo de Vida da Activity ---
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,8 +95,6 @@ public class MainActivity extends AppCompatActivity {
         loadDataForSelectedDate();
     }
 
-    // --- Métodos de Configuração ---
-
     private void initializeViews() {
         tvCaloriesConsumed = findViewById(R.id.tvCaloriesConsumed);
         tvCaloriesRemaining = findViewById(R.id.tvCaloriesRemaining);
@@ -97,6 +105,11 @@ public class MainActivity extends AppCompatActivity {
         layoutExerciseEntries = findViewById(R.id.layoutExerciseEntries);
         tvWaterCount = findViewById(R.id.tvWaterCount);
         switchWaterReminder = findViewById(R.id.switchWaterReminder);
+        pieChart = findViewById(R.id.pieChart);
+        tvTotalFat = findViewById(R.id.tv_total_fat);
+        tvTotalCholesterol = findViewById(R.id.tv_total_cholesterol);
+        tvTotalSodium = findViewById(R.id.tv_total_sodium);
+        tvTotalSugars = findViewById(R.id.tv_total_sugars);
     }
 
     private void setupListeners() {
@@ -112,11 +125,7 @@ public class MainActivity extends AppCompatActivity {
         switchWaterReminder.setChecked(prefs.getBoolean(KEY_REMINDER_ON, false));
         switchWaterReminder.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.edit().putBoolean(KEY_REMINDER_ON, isChecked).apply();
-            if (isChecked) {
-                scheduleWaterReminder();
-            } else {
-                cancelWaterReminder();
-            }
+            if (isChecked) scheduleWaterReminder(); else cancelWaterReminder();
         });
 
         setupWeekDaySelector();
@@ -127,31 +136,43 @@ public class MainActivity extends AppCompatActivity {
         totalCaloriesGoal = prefs.getFloat("calorieGoal", 2000);
     }
 
-    // --- Lógica Principal de Dados ---
-
     private void loadDataForSelectedDate() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             List<MealEntryEntity> meals = db.foodDao().getMealsForDate(selectedDate);
             List<LoggedExerciseEntity> exercises = db.foodDao().getLoggedExercisesForDate(selectedDate);
             WaterIntakeEntity water = db.foodDao().getWaterForDate(selectedDate);
 
+            float totalCarbs = 0, totalProtein = 0, totalFat = 0, totalCholesterol = 0, totalSodium = 0, totalSugars = 0, totalConsumedCalories = 0;
+
+            for (MealEntryEntity entry : meals) {
+                FoodEntity foodDetails = db.foodDao().getFoodById(entry.foodId);
+                if (foodDetails != null) {
+                    float ratio = entry.consumedWeightInGrams / 100f;
+                    totalConsumedCalories += foodDetails.calories * ratio;
+                    totalCarbs += foodDetails.carbohydrate_g * ratio;
+                    totalProtein += foodDetails.protein_g * ratio;
+                    totalFat += foodDetails.fat_g * ratio;
+                    totalCholesterol += foodDetails.cholesterol_mg * ratio;
+                    totalSodium += foodDetails.sodium_mg * ratio;
+                    totalSugars += foodDetails.sugars_g * ratio;
+                }
+            }
+
+            final float finalConsumed = totalConsumedCalories, finalCarbs = totalCarbs, finalProtein = totalProtein, finalFat = totalFat;
+            final float finalCholesterol = totalCholesterol, finalSodium = totalSodium, finalSugars = totalSugars;
+
             runOnUiThread(() -> {
                 clearAllLayouts();
-
-                float totalConsumed = 0;
-                for (MealEntryEntity entry : meals) {
-                    totalConsumed += entry.calories;
-                    addFoodToUI(entry);
-                }
-
+                for (MealEntryEntity entry : meals) addFoodToUI(entry);
                 float totalBurned = 0;
                 for (LoggedExerciseEntity entry : exercises) {
                     totalBurned += entry.caloriesBurned;
                     addExerciseToUI(entry);
                 }
-
-                updateCalorieDisplay(totalConsumed, totalBurned);
+                updateCalorieDisplay(finalConsumed, totalBurned);
                 updateWaterDisplay(water);
+                setupPieChart(finalCarbs, finalProtein, finalFat);
+                updateNutrientSummary(finalFat, finalCholesterol, finalSodium, finalSugars);
             });
         });
     }
@@ -188,9 +209,7 @@ public class MainActivity extends AppCompatActivity {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             WaterIntakeEntity currentIntake = db.foodDao().getWaterForDate(selectedDate);
             if (currentIntake == null) {
-                if (change > 0) {
-                    db.foodDao().upsertWaterIntake(new WaterIntakeEntity(selectedDate, change));
-                }
+                if (change > 0) db.foodDao().upsertWaterIntake(new WaterIntakeEntity(selectedDate, change));
             } else {
                 int newCount = currentIntake.bottleCount + change;
                 if (newCount >= 0) {
@@ -201,8 +220,6 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(this::loadDataForSelectedDate);
         });
     }
-
-    // --- Lógica de UI ---
 
     private void addFoodToUI(MealEntryEntity entry) {
         View view = LayoutInflater.from(this).inflate(R.layout.list_item_meal_entry, null, false);
@@ -224,9 +241,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateWaterDisplay(WaterIntakeEntity waterIntake) {
-        if (tvWaterCount != null) {
-            tvWaterCount.setText(waterIntake != null ? String.valueOf(waterIntake.bottleCount) : "0");
-        }
+        tvWaterCount.setText(waterIntake != null ? String.valueOf(waterIntake.bottleCount) : "0");
     }
 
     private void updateCalorieDisplay(float consumed, float burned) {
@@ -242,8 +257,6 @@ public class MainActivity extends AppCompatActivity {
         layoutSnack.removeAllViews();
         layoutExerciseEntries.removeAllViews();
     }
-
-    // --- Outros Métodos Auxiliares ---
 
     private void openFoodSearch(String mealType) {
         Intent intent = new Intent(this, FoodSearchActivity.class);
@@ -264,9 +277,7 @@ public class MainActivity extends AppCompatActivity {
         SimpleDateFormat dbDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String[] dayNames = {"SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"};
 
-        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-            calendar.add(Calendar.WEEK_OF_YEAR, -1);
-        }
+        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) calendar.add(Calendar.WEEK_OF_YEAR, -1);
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
 
         weekDaysContainer.removeAllViews();
@@ -275,15 +286,11 @@ public class MainActivity extends AppCompatActivity {
             final String dateForDb = dbDateFormat.format(calendar.getTime());
             View dayView = inflater.inflate(R.layout.layout_day_of_week, weekDaysContainer, false);
 
-            TextView tvDayName = dayView.findViewById(R.id.tv_day_name);
-            TextView tvDayDate = dayView.findViewById(R.id.tv_day_date);
-            tvDayName.setText(dayNames[i]);
-            tvDayDate.setText(dateFormat.format(calendar.getTime()));
+            ((TextView) dayView.findViewById(R.id.tv_day_name)).setText(dayNames[i]);
+            ((TextView) dayView.findViewById(R.id.tv_day_date)).setText(dateFormat.format(calendar.getTime()));
 
             dayView.setOnClickListener(v -> {
-                for(int j = 0; j < weekDaysContainer.getChildCount(); j++) {
-                    weekDaysContainer.getChildAt(j).setSelected(false);
-                }
+                for(int j = 0; j < weekDaysContainer.getChildCount(); j++) weekDaysContainer.getChildAt(j).setSelected(false);
                 v.setSelected(true);
                 selectedDate = dateForDb;
                 loadDataForSelectedDate();
@@ -294,10 +301,7 @@ public class MainActivity extends AppCompatActivity {
                 selectedDate = dateForDb;
             }
 
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             if (i > 0) params.setMarginStart(16);
             dayView.setLayoutParams(params);
 
@@ -308,16 +312,13 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isSameDay(Calendar cal) {
         Calendar today = Calendar.getInstance();
-        return cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
+        return cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) && cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
     }
 
     private void scheduleWaterReminder() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, NotificationReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + REMINDER_INTERVAL, REMINDER_INTERVAL, pendingIntent);
         Toast.makeText(this, "Lembrete de água ativado!", Toast.LENGTH_SHORT).show();
     }
@@ -325,10 +326,46 @@ public class MainActivity extends AppCompatActivity {
     private void cancelWaterReminder() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, NotificationReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         alarmManager.cancel(pendingIntent);
         Toast.makeText(this, "Lembrete de água desativado.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setupPieChart(float carbs, float protein, float fat) {
+        pieChart.getDescription().setEnabled(false);
+        pieChart.setUsePercentValues(true);
+        pieChart.setEntryLabelTextSize(12f);
+        pieChart.setEntryLabelColor(Color.BLACK);
+        pieChart.setHoleRadius(40f);
+        pieChart.setTransparentCircleRadius(45f);
+
+        ArrayList<PieEntry> entries = new ArrayList<>();
+        entries.add(new PieEntry(carbs, "Carbs"));
+        entries.add(new PieEntry(protein, "Proteínas"));
+        entries.add(new PieEntry(fat, "Gorduras"));
+
+        ArrayList<Integer> colors = new ArrayList<>();
+        colors.add(ContextCompat.getColor(this, R.color.carbs_color));
+        colors.add(ContextCompat.getColor(this, R.color.protein_color));
+        colors.add(ContextCompat.getColor(this, R.color.fat_color));
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(colors);
+
+        PieData data = new PieData(dataSet);
+        data.setDrawValues(true);
+        data.setValueFormatter(new PercentFormatter(pieChart));
+        data.setValueTextSize(12f);
+        data.setValueTextColor(Color.BLACK);
+
+        pieChart.setData(data);
+        pieChart.invalidate();
+    }
+
+    private void updateNutrientSummary(float fat, float cholesterol, float sodium, float sugars) {
+        tvTotalFat.setText(String.format(Locale.getDefault(), "Gorduras Totais: %.1fg", fat));
+        tvTotalCholesterol.setText(String.format(Locale.getDefault(), "Colesterol: %.0fmg", cholesterol));
+        tvTotalSodium.setText(String.format(Locale.getDefault(), "Sódio: %.0fmg", sodium));
+        tvTotalSugars.setText(String.format(Locale.getDefault(), "Açúcares: %.1fg", sugars));
     }
 }
