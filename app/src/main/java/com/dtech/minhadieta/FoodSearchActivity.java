@@ -109,13 +109,14 @@ public class FoodSearchActivity extends AppCompatActivity {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(getAssets().open("alimentos.csv")))) {
             List<FoodEntity> foods = new ArrayList<>();
             String line;
-            reader.readLine();
+            reader.readLine(); // Pula o cabeçalho
             while ((line = reader.readLine()) != null) {
                 String[] tokens = line.split(";", -1);
                 try {
                     if (tokens.length > 4) {
                         int id = Integer.parseInt(tokens[0].trim());
-                        String name = tokens[1].trim();
+                        // Correção: O nome do alimento está no índice 2
+                        String name = tokens[2].trim();
                         int calories = tokens[4].trim().equalsIgnoreCase("NA") ? 0 : Integer.parseInt(tokens[4].trim());
                         foods.add(new FoodEntity(id, name, calories));
                     }
