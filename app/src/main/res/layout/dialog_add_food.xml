@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tv_dialog_food_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nome do Alimento"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:textAlignment="center"/>
+
+    <TextView
+        android:id="@+id/tv_dialog_food_calories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Calorias por porção"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Selecione a Quantidade"
+        android:textSize="16sp"
+        android:layout_gravity="center_horizontal"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
+
+        <ImageButton
+            android:id="@+id/btn_decrease_quantity"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_remove"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Diminuir" />
+
+        <TextView
+            android:id="@+id/tv_quantity"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:inputType="numberDecimal" />
+
+        <ImageButton
+            android:id="@+id/btn_increase_quantity"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_add"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Aumentar" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_dialog_serving_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="fatia(s)"
+        android:textSize="16sp"/>
+
+
+    <Button
+        android:id="@+id/btn_dialog_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Adicionar"/>
+
+</LinearLayout>

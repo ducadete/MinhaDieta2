@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="12dp"
+    android:background="@drawable/chip_state_selector"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/tv_day_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SEG"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/chip_text_selector" />
+
+    <TextView
+        android:id="@+id/tv_day_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="14/07"
+        android:textSize="12sp"
+        android:textColor="@color/chip_text_selector" />
+
+</LinearLayout>

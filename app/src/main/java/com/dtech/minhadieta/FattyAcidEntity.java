@@ -15,22 +15,18 @@ public class FattyAcidEntity {
     public int id;
 
     @ColumnInfo(name = "food_owner_id", index = true)
-    public int foodOwnerId; // Chave estrangeira que liga ao FoodEntity
+    public int foodOwnerId;
 
-    // Apenas alguns exemplos de colunas
-    @ColumnInfo(name = "saturados_g")
-    public String saturados;
+    public float saturados;
+    public float monoinsaturados;
+    public float poliinsaturados;
+    public float colesterol;
 
-    @ColumnInfo(name = "monoinsaturados_g")
-    public String monoinsaturados;
-
-    @ColumnInfo(name = "poliinsaturados_g")
-    public String poliinsaturados;
-
-    public FattyAcidEntity(int foodOwnerId, String saturados, String monoinsaturados, String poliinsaturados) {
+    public FattyAcidEntity(int foodOwnerId, float saturados, float monoinsaturados, float poliinsaturados, float colesterol) {
         this.foodOwnerId = foodOwnerId;
         this.saturados = saturados;
         this.monoinsaturados = monoinsaturados;
         this.poliinsaturados = poliinsaturados;
+        this.colesterol = colesterol;
     }
 }

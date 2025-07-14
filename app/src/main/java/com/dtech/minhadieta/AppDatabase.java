@@ -6,9 +6,10 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import androidx.room.Database;
 
-@Database(entities = {FoodEntity.class, FattyAcidEntity.class, AminoAcidEntity.class}, version = 1, exportSchema = false)
-public abstract class AppDatabase extends RoomDatabase {
+@Database(entities = {FoodEntity.class, AminoAcidEntity.class, FattyAcidEntity.class, MealEntryEntity.class, WaterIntakeEntity.class},
+        version = 4)public abstract class AppDatabase extends RoomDatabase {
 
     public abstract FoodDao foodDao();
 
@@ -17,13 +18,14 @@ public abstract class AppDatabase extends RoomDatabase {
     public static final ExecutorService databaseWriteExecutor =
             Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-    public static AppDatabase getDatabase(final Context context) {
+    static AppDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     AppDatabase.class, "minha_dieta_db")
-                            .fallbackToDestructiveMigration() // Evita crashes em atualizações de schema
+                            // 3. Adicione esta linha
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }
